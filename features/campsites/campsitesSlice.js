@@ -8,14 +8,13 @@ export const fetchCampsites = createAsyncThunk(
     if (!response.ok) {
       return Promise.reject("Unable to fetch, status: " + response.status);
     }
-    const data = await response.json();
-    return data;
+    return response.json();
   }
 );
 
 const campsitesSlice = createSlice({
   name: "campsites",
-  initialState: { isLoading: true, errMess: null, campsitesArray: [] },
+  initialState: { campsitesArray: [], isLoading: true, errMsg: "" },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -24,14 +23,15 @@ const campsitesSlice = createSlice({
       })
       .addCase(fetchCampsites.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.errMess = null;
         state.campsitesArray = action.payload;
       })
       .addCase(fetchCampsites.rejected, (state, action) => {
         state.isLoading = false;
-        state.errMess = action.error ? action.error.message : "Fetch failed";
+        state.errMsg = action.error ? action.error.message : "Fetch failed";
       });
   },
 });
 
 export const campsitesReducer = campsitesSlice.reducer;
+
+export default campsitesSlice.reducer;
