@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import { FlatList, StyleSheet, Text, View, Modal, Button } from "react-native";
+import { useState } from "react";
+import { Button, FlatList, Modal, StyleSheet, Text, View } from "react-native";
 import { Input, Rating } from "react-native-elements";
 import { useSelector, useDispatch } from "react-redux";
 import RenderCampsite from "../features/campsites/RenderCampsite";
 import { toggleFavorite } from "../features/favorites/favoritesSlice";
 import { postComment } from "../features/comments/commentsSlice";
+import * as Animatable from "react-native-animatable";
 
 const CampsiteInfoScreen = ({ route }) => {
   const { campsite } = route.params;
   const comments = useSelector((state) => state.comments);
   const favorites = useSelector((state) => state.favorites);
-  const dispatch = useDispatch();
-
   const [showModal, setShowModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [author, setAuthor] = useState("");
   const [text, setText] = useState("");
+  const dispatch = useDispatch();
 
   const handleSubmit = () => {
     const newComment = {
@@ -34,35 +34,42 @@ const CampsiteInfoScreen = ({ route }) => {
     setText("");
   };
 
-  const renderCommentItem = ({ item }) => (
-    <View style={styles.commentItem}>
-      <Text style={{ fontSize: 14 }}>{item.text}</Text>
-      <Rating
-        readonly
-        startingValue={item.rating}
-        imageSize={10}
-        style={{ alignItems: "flex-start", paddingVertical: "5%" }}
-      />
-      <Text style={{ fontSize: 12 }}>{`-- ${item.author}, ${item.date}`}</Text>
-    </View>
-  );
+  const renderCommentItem = ({ item }) => {
+    return (
+      <View style={styles.commentItem}>
+        <Text style={{ fontSize: 14 }}>{item.text}</Text>
+        <Rating
+          startingValue={item.rating}
+          imageSize={10}
+          readonly
+          style={{ alignItems: "flex-start", paddingVertical: "5%" }}
+        />
+        <Text style={{ fontSize: 12 }}>
+          {`-- ${item.author}, ${item.date}`}
+        </Text>
+      </View>
+    );
+  };
 
   return (
-    <>
+    <Animatable.View animation="fadeInUp" duration={2000} delay={1000}>
       <FlatList
         data={comments.commentsArray.filter(
           (comment) => comment.campsiteId === campsite.id
         )}
         renderItem={renderCommentItem}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ marginHorizontal: 20, paddingVertical: 20 }}
+        contentContainerStyle={{
+          marginHorizontal: 20,
+          paddingVertical: 20,
+        }}
         ListHeaderComponent={
           <>
             <RenderCampsite
               campsite={campsite}
               isFavorite={favorites.includes(campsite.id)}
               markFavorite={() => dispatch(toggleFavorite(campsite.id))}
-              onShowModal={() => setShowModal(true)}
+              onShowModal={() => setShowModal(!showModal)}
             />
             <Text style={styles.commentsTitle}>Comments</Text>
           </>
@@ -118,7 +125,7 @@ const CampsiteInfoScreen = ({ route }) => {
           </View>
         </View>
       </Modal>
-    </>
+    </Animatable.View>
   );
 };
 
