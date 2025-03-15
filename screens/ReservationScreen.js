@@ -7,11 +7,11 @@ import {
   Switch,
   Button,
   Alert,
-  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Animatable from "react-native-animatable";
+import * as Notifications from "expo-notifications";
 
 const ReservationScreen = () => {
   const [campers, setCampers] = useState(1);
@@ -25,6 +25,37 @@ const ReservationScreen = () => {
     setDate(currentDate);
   };
 
+  const handleReservation = () => {
+    const message = `Number of Campers: ${campers}
+                            \nHike-In? ${hikeIn}
+                            \nDate: ${date.toLocaleDateString("en-US")}`;
+    Alert.alert(
+      "Begin Search?",
+      message,
+      [
+        {
+          text: "Cancel",
+          onPress: () => {
+            console.log("Reservation Search Canceled");
+            resetForm();
+          },
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => {
+            presentLocalNotification(date.toLocaleDateString("en-US"));
+            resetForm();
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+    console.log("campers:", campers);
+    console.log("hikeIn:", hikeIn);
+    console.log("date:", date);
+  };
+
   const resetForm = () => {
     setCampers(1);
     setHikeIn(false);
@@ -32,25 +63,32 @@ const ReservationScreen = () => {
     setShowCalendar(false);
   };
 
-  const handleReservation = () => {
-    Alert.alert(
-      "Confirm Reservation",
-      `Number of Campers: ${campers}\nHike-In: ${
-        hikeIn ? "Yes" : "No"
-      }\nDate: ${date.toLocaleDateString("en-US")}`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: resetForm,
+  const presentLocalNotification = async (reservationDate) => {
+    const sendNotification = () => {
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+        }),
+      });
+
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Your Campsite Reservation Search",
+          body: `Search for ${reservationDate} requested`,
         },
-        {
-          text: "OK",
-          onPress: resetForm,
-        },
-      ],
-      { cancelable: false }
-    );
+        trigger: null,
+      });
+    };
+
+    let permissions = await Notifications.getPermissionsAsync();
+    if (!permissions.granted) {
+      permissions = await Notifications.requestPermissionsAsync();
+    }
+    if (permissions.granted) {
+      sendNotification();
+    }
   };
 
   return (
@@ -72,11 +110,11 @@ const ReservationScreen = () => {
           </Picker>
         </View>
         <View style={styles.formRow}>
-          <Text style={styles.formLabel}>HikeIn?</Text>
+          <Text style={styles.formLabel}>Hike In?</Text>
           <Switch
             style={styles.formItem}
             value={hikeIn}
-            trackColor={{ true: "#5637DD", false: "null" }}
+            trackColor={{ true: "#5637DD", false: null }}
             onValueChange={(value) => setHikeIn(value)}
           />
         </View>
