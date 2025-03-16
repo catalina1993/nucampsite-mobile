@@ -1,217 +1,215 @@
+import { useEffect } from "react";
 import {
-  Image,
   Platform,
-  StyleSheet,
-  Text,
   View,
   ToastAndroid,
+  Alert,
+  StyleSheet,
+  Image,
+  Text,
 } from "react-native";
 import Constants from "expo-constants";
-import CampsiteInfoScreen from "./CampsiteInfoScreen";
-import DirectoryScreen from "./DirectoryScreen";
-import { createStackNavigator } from "@react-navigation/stack";
+import NetInfo from "@react-native-community/netinfo";
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
-import HomeScreen from "./HomeScreen";
-import AboutScreen from "./AboutScreen";
-import ContactScreen from "./ContactScreen";
-import ReservationScreen from "./ReservationScreen";
-import { Icon } from "react-native-elements";
-import logo from "../assets/images/logo.png";
+import { createStackNavigator } from "@react-navigation/stack";
 import { useDispatch } from "react-redux";
-import { useEffect } from "react";
 import { fetchPartners } from "../features/partners/partnersSlice";
 import { fetchCampsites } from "../features/campsites/campsitesSlice";
 import { fetchPromotions } from "../features/promotions/promotionsSlice";
 import { fetchComments } from "../features/comments/commentsSlice";
+import { Icon } from "react-native-elements";
+
+import HomeScreen from "./HomeScreen";
+import AboutScreen from "./AboutScreen";
+import ContactScreen from "./ContactScreen";
+import ReservationScreen from "./ReservationScreen";
 import FavoritesScreen from "./FavoritesScreen";
+import DirectoryScreen from "./DirectoryScreen";
+import CampsiteInfoScreen from "./CampsiteInfoScreen";
 import LoginScreen from "./LoginScreen";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/core";
-import NetInfo from "@react-native-community/netinfo";
+import logo from "../assets/images/logo.png";
 
 const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
 
 const screenOptions = {
   headerTintColor: "#fff",
   headerStyle: { backgroundColor: "#5637DD" },
 };
 
-const HomeNavigator = () => {
-  const Stack = createStackNavigator();
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={({ navigation }) => ({
-          title: "Home",
-          headerLeft: () => (
-            <Icon
-              name="home"
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-    </Stack.Navigator>
-  );
+const getConnectionMessage = (type) => {
+  switch (type) {
+    case "none":
+      return "No network connection is active.";
+    case "unknown":
+      return "The network connection state is now unknown.";
+    case "cellular":
+      return "You are now connected to a cellular network.";
+    case "wifi":
+      return "You are now connected to a WiFi network.";
+    default:
+      return "You are now connected to an active network.";
+  }
 };
 
-const AboutNavigator = () => {
-  const Stack = createStackNavigator();
-
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="About"
-        component={AboutScreen}
-        options={({ navigation }) => ({
-          headerLeft: () => (
-            <Icon
-              name="info-circle"
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-    </Stack.Navigator>
-  );
+// ✅ Function to handle network change events
+const handleConnectivityChange = (connectionInfo) => {
+  const connectionMsg = getConnectionMessage(connectionInfo.type);
+  Platform.OS === "ios"
+    ? Alert.alert("Connection change:", connectionMsg)
+    : ToastAndroid.show(connectionMsg, ToastAndroid.LONG);
 };
 
-const ContactNavigator = () => {
-  const Stack = createStackNavigator();
+const HomeNavigator = () => (
+  <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Screen
+      name="Home"
+      component={HomeScreen}
+      options={({ navigation }) => ({
+        title: "Home",
+        headerLeft: () => (
+          <Icon
+            name="home"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+  </Stack.Navigator>
+);
 
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Contact"
-        component={ContactScreen}
-        options={({ navigation }) => ({
-          title: "Contact Us",
-          headerLeft: () => (
-            <Icon
-              name="address-card"
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-    </Stack.Navigator>
-  );
-};
+const AboutNavigator = () => (
+  <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Screen
+      name="About"
+      component={AboutScreen}
+      options={({ navigation }) => ({
+        title: "About Us",
+        headerLeft: () => (
+          <Icon
+            name="info-circle"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+  </Stack.Navigator>
+);
 
-const ReservationNavigator = () => {
-  const Stack = createStackNavigator();
+const ContactNavigator = () => (
+  <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Screen
+      name="Contact"
+      component={ContactScreen}
+      options={({ navigation }) => ({
+        title: "Contact Us",
+        headerLeft: () => (
+          <Icon
+            name="address-card"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+  </Stack.Navigator>
+);
 
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Reservation"
-        component={ReservationScreen}
-        options={({ navigation }) => ({
-          title: "Reservation Search",
-          headerLeft: () => (
-            <Icon
-              name="tree"
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-    </Stack.Navigator>
-  );
-};
+const ReservationNavigator = () => (
+  <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Screen
+      name="Reservation"
+      component={ReservationScreen}
+      options={({ navigation }) => ({
+        title: "Reservations",
+        headerLeft: () => (
+          <Icon
+            name="tree"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+  </Stack.Navigator>
+);
 
-const FavoritesNavigator = () => {
-  const Stack = createStackNavigator();
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Favorites"
-        component={FavoritesScreen}
-        options={({ navigation }) => ({
-          title: "Favorite Campsites",
-          headerLeft: () => (
-            <Icon
-              name="heart"
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-    </Stack.Navigator>
-  );
-};
+const FavoritesNavigator = () => (
+  <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Screen
+      name="Favorites"
+      component={FavoritesScreen}
+      options={({ navigation }) => ({
+        title: "My Favorites",
+        headerLeft: () => (
+          <Icon
+            name="heart"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+  </Stack.Navigator>
+);
 
-const LoginNavigator = () => {
-  const Stack = createStackNavigator();
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={({ navigation, route }) => ({
-          headerTitle: getFocusedRouteNameFromRoute(route),
-          headerLeft: () => (
-            <Icon
-              name={
-                getFocusedRouteNameFromRoute(route) === "Register"
-                  ? "user-plus"
-                  : "sign-in"
-              }
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-    </Stack.Navigator>
-  );
-};
+const LoginNavigator = () => (
+  <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={({ navigation }) => ({
+        title: "Login",
+        headerLeft: () => (
+          <Icon
+            name="sign-in"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+  </Stack.Navigator>
+);
 
-const DirectoryNavigator = () => {
-  const Stack = createStackNavigator();
-  return (
-    <Stack.Navigator initialRouteName="Directory" screenOptions={screenOptions}>
-      <Stack.Screen
-        name="Directory"
-        component={DirectoryScreen}
-        options={({ navigation }) => ({
-          title: "Campsite Directory",
-          headerLeft: () => (
-            <Icon
-              name="list"
-              type="font-awesome"
-              iconStyle={styles.stackIcon}
-              onPress={() => navigation.toggleDrawer()}
-            />
-          ),
-        })}
-      />
-      <Stack.Screen
-        name="CampsiteInfo"
-        component={CampsiteInfoScreen}
-        options={({ route }) => ({
-          title: route.params.campsite.name,
-        })}
-      />
-    </Stack.Navigator>
-  );
-};
+const DirectoryNavigator = () => (
+  <Stack.Navigator initialRouteName="Directory" screenOptions={screenOptions}>
+    <Stack.Screen
+      name="Directory"
+      component={DirectoryScreen}
+      options={({ navigation }) => ({
+        title: "Campsite Directory",
+        headerLeft: () => (
+          <Icon
+            name="list"
+            type="font-awesome"
+            iconStyle={styles.stackIcon}
+            onPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
+    />
+    <Stack.Screen
+      name="CampsiteInfo"
+      component={CampsiteInfoScreen}
+      options={({ route }) => ({
+        title: route.params.campsite.name,
+      })}
+    />
+  </Stack.Navigator>
+);
 
 const CustomDrawerContent = (props) => (
   <DrawerContentScrollView {...props}>
@@ -238,42 +236,27 @@ const Main = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    NetInfo.fetch().then((connectionInfo) => {
-      Platform.OS === "ios"
-        ? Alert.alert("Initial Network Connectivity Type:", connectionInfo.type)
-        : ToastAndroid.show(
-            "Initial Network Connectivity Type: " + connectionInfo.type,
-            ToastAndroid.LONG
-          );
-    });
+    const showNetInfo = async () => {
+      try {
+        const connectionInfo = await NetInfo.fetch();
+        const connectionMsg = getConnectionMessage(connectionInfo.type);
 
-    const unsubscribeNetInfo = NetInfo.addEventListener((connectionInfo) => {
-      handleConnectivityChange(connectionInfo);
-    });
+        Platform.OS === "ios"
+          ? Alert.alert("Initial Network Connectivity Type:", connectionMsg)
+          : ToastAndroid.show(connectionMsg, ToastAndroid.LONG);
+      } catch (error) {
+        console.log("Error fetching network info:", error);
+      }
+    };
 
-    return unsubscribeNetInfo;
+    showNetInfo();
+
+    const unsubscribeNetInfo = NetInfo.addEventListener(
+      handleConnectivityChange
+    );
+
+    return () => unsubscribeNetInfo();
   }, []);
-
-  const handleConnectivityChange = (connectionInfo) => {
-    let connectionMsg = "You are now connected to an active network.";
-    switch (connectionInfo.type) {
-      case "none":
-        connectionMsg = "No network connection is active.";
-        break;
-      case "unknown":
-        connectionMsg = "The network connection state is now unknown.";
-        break;
-      case "cellular":
-        connectionMsg = "You are now connected to a cellular network.";
-        break;
-      case "wifi":
-        connectionMsg = "You are now connected to a WiFi network.";
-        break;
-    }
-    Platform.OS === "ios"
-      ? Alert.alert("Connection change:", connectionMsg)
-      : ToastAndroid.show(connectionMsg, ToastAndroid.LONG);
-  };
 
   return (
     <View
